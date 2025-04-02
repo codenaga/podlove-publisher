@@ -13,9 +13,17 @@ format:
 validateFormat:
 	php-cs-fixer fix . --config .php-cs-fixer.dist.php -v --dry-run --stop-on-violation --using-cache=no
 
+.PHONY: update_subscribe_button
+
 update_subscribe_button:
+	uname | grep -q Darwin && (xcode-select -p > /dev/null 2>&1 || xcode-select --install) || true
+	which python3 > /dev/null || (echo "Python 3 ist erforderlich, aber nicht gefunden." && exit 1)
 	rm -rf .tmppsb
 	git clone https://github.com/podlove/podlove-subscribe-button.git .tmppsb
+	cd .tmppsb && sed -i.bak '/"node-sass":/d' package.json
+	cd .tmppsb && yarn install
+	cd .tmppsb && yarn add sass
+	cd .tmppsb && export PYTHON=$$(which python3) && npx gulp
 	rm -rf lib/modules/subscribe_button/dist
 	mv .tmppsb/dist lib/modules/subscribe_button/dist
 	rm -rf .tmppsb
